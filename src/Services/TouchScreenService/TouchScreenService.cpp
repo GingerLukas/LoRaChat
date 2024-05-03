@@ -4,10 +4,10 @@
 
 #include "TouchScreenService.h"
 
-volatile bool TouchScreenService::_touchPending = false;
+volatile bool touchPending = false;
 
 void handle_Touch(){
-    TouchScreenService::_touchPending = true;
+    touchPending = true;
 }
 
 TouchScreenService::TouchScreenService() : _touch(Wire, TOUCH_SDA, TOUCH_SCL, TOUCH_MODULE_ADDR) {
@@ -30,8 +30,8 @@ void TouchScreenService::setup() {
 }
 
 void TouchScreenService::loop() {
-    if (_touchPending && _touch.read()) {
-        _touchPending = false;
+    if (touchPending && _touch.read()) {
+        touchPending = false;
         TP_Point t = _touch.getPoint(0);
         translate(t);
 
@@ -97,6 +97,7 @@ void TouchScreenService::translate(TP_Point &point) {
 
 TP_Point TouchScreenService::getLastTouch() {
     _lastTouch.lockRead();
-    return _lastTouch.value;
+    auto last = _lastTouch.value;
     _lastTouch.unlock();
+    return last;
 }

@@ -12,14 +12,13 @@
 #include "Mutex/RwThreadSafe.h"
 
 class ServiceBase {
-public:
+protected:
     virtual void setup() = 0;
 
     virtual void loop() = 0;
 
     [[noreturn]] static void serviceLoop(void *service);
 
-protected:
     void begin(const char *name, uint8_t priority, uint64_t delay);
 
     uint64_t _loopDelay = 0;
@@ -28,6 +27,12 @@ protected:
     TaskHandle_t _handle = nullptr;
     StaticTask_t _taskBuffer{};
     StackType_t _taskStack[4096]{};
+
+    void softAssert(uint32_t value, const String &text) {
+        if (value != 0) {
+            Serial.printf("Soft assert failed! (%u): %s\n", value, text.c_str());
+        }
+    }
 };
 
 

@@ -15,13 +15,10 @@ public:
 
     void begin(uint16_t width, uint16_t height, uint8_t rotation);
 
-    void setup() override;
-
-    void loop() override;
-
     TP_Point getLastTouch();
-
-    volatile static bool _touchPending;
+protected:
+    void setup() override;
+    void loop() override;
 private:
     TouchLib _touch;
 

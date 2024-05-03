@@ -9,8 +9,11 @@
 
 template<class T>
 struct ThreadSafe : public Mutex {
-    ThreadSafe() : ThreadSafe(false){};
-    explicit ThreadSafe(bool debug) : Mutex(debug){
+    template<typename TInit>
+    ThreadSafe(TInit init,bool debug = false) : value(init), Mutex(debug){
+
+    }
+    explicit ThreadSafe(bool debug = false) : Mutex(debug){
 
     }
     T value;

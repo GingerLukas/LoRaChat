@@ -12,4 +12,14 @@
 #define TOUCH_RES -1
 #define TOUCH_INT 16
 
+
+#define RADIO_FREQ 868.0
+
+#define RADIO_CS 9
+#define RADIO_BUSY 13
+#define RADIO_RST 17
+#define RADIO_DIO1 45
+
+
+
 #endif //LORACHAT_CONFIG_H
