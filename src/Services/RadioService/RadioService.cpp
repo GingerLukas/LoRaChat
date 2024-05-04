@@ -30,7 +30,7 @@ void RadioService::setup() {
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
     softAssert(_radio.value.begin(RADIO_FREQ), "radio freq");
-    /*
+
     softAssert(_radio.value.setBandwidth(250), "bandwidth");
     softAssert(_radio.value.setSpreadingFactor(10), "spreading factor");
     softAssert(_radio.value.setCodingRate(6), "coding rate");
@@ -39,33 +39,35 @@ void RadioService::setup() {
     softAssert(_radio.value.setCurrentLimit(140), "current limit");
     softAssert(_radio.value.setPreambleLength(15), "preamble length");
     softAssert(_radio.value.setCRC(false), "crc");
-     */
+
 
     //register callback on packet
     _radio.value.setDio1Action(handle_dio);
 
-    softAssert(_radio.value.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF), "start receive");
+    //softAssert(_radio.value.startReceive(), "start receive");
 
     _radio.unlock();
 }
 
 void RadioService::loop() {
+    return;
     if (dioFlag) {
         dioFlag = false;
         String message;
         _radio.lock();
         _radio.value.readData(message);
         _radio.unlock();
-        if (message) {
+        if (message.length()) {
             Serial.printf("Received: %s\n", message.c_str());
-        }
-        else{
-            Serial.println("Message IRQ set but not message was read");
         }
     }
 
+    softAssert(_radio.value.startReceive(), "start receive");
+}
+
+void RadioService::sendMessage(const String &message) {
     _radio.lock();
-    _radio.value.transmit("Hello world!");
+    softAssert(_radio.value.transmit(message.c_str()),"transmit");
     _radio.unlock();
 }
 

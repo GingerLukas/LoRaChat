@@ -15,10 +15,12 @@ public:
 
     void begin();
 
+    void sendMessage(const String& message);
 protected:
     void setup() override;
 
     void loop() override;
+
 
 private:
     ThreadSafe<SX1262> _radio;
