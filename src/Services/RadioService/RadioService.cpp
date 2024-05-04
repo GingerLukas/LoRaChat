@@ -22,6 +22,13 @@ void RadioService::begin() {
 void RadioService::setup() {
     _radio.lock();
 
+    digitalWrite(SDCARD_CS, HIGH);
+    digitalWrite(RADIO_CS, HIGH);
+    digitalWrite(DISPLAY_CS, HIGH);
+
+    SPI.end();
+    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
+
     softAssert(_radio.value.begin(RADIO_FREQ), "radio freq");
     /*
     softAssert(_radio.value.setBandwidth(250), "bandwidth");
@@ -51,6 +58,9 @@ void RadioService::loop() {
         _radio.unlock();
         if (message) {
             Serial.printf("Received: %s\n", message.c_str());
+        }
+        else{
+            Serial.println("Message IRQ set but not message was read");
         }
     }
 

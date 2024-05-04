@@ -13,13 +13,19 @@
 #define TOUCH_INT 16
 
 
+#define SDCARD_CS 39
+#define DISPLAY_CS 12
+#define RADIO_CS 9
+
+#define SPI_MOSI 41
+#define SPI_MISO 38
+#define SPI_SCK 40
+
 #define RADIO_FREQ 868.0
 
-#define RADIO_CS 9
 #define RADIO_BUSY 13
 #define RADIO_RST 17
 #define RADIO_DIO1 45
-
 
 
 #endif //LORACHAT_CONFIG_H
