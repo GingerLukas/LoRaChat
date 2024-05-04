@@ -4,7 +4,7 @@
 
 #include "TouchScreenService.h"
 
-volatile bool touchPending = false;
+static volatile bool touchPending = false;
 
 void handle_Touch(){
     touchPending = true;
@@ -30,16 +30,16 @@ void TouchScreenService::setup() {
 }
 
 void TouchScreenService::loop() {
-    if (touchPending && _touch.read()) {
-        touchPending = false;
+    bool available = touchPending;
+    touchPending = false;
+
+    if (available && _touch.read()) {
         TP_Point t = _touch.getPoint(0);
         translate(t);
 
         _lastTouch.lockWrite();
         _lastTouch.value = t;
         _lastTouch.unlock();
-
-        // Serial.printf("X: %d, Y: %d\n", t.x, t.y);
     }
 }
 

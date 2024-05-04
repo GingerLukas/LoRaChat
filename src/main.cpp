@@ -17,10 +17,16 @@ void setup() {
     Serial.begin(115200);
 
     touchScreen.begin(320,240,1);
-    radio.begin();
+    //radio.begin();
 }
 
+TP_Point last;
 void loop() {
-    delay(1000);
+    TP_Point current = touchScreen.getLastTouch();
+    if(current != last){
+        last = current;
+        Serial.printf("X: %d, Y: %d\n",current.x, current.y);
+    }
+    delay(20);
 }
 
