@@ -14,8 +14,10 @@ void ServiceBase::begin(const char *name, uint8_t priority, uint64_t delay) {
     service->setup();
 
     while (true) {
+        uint64_t loopTime = millis();
         service->loop();
+        loopTime = millis() - loopTime;
 
-        delay(service->_loopDelay);
+        delay(loopTime >= service->_loopDelay ? 1 : service->_loopDelay - loopTime);
     }
 }

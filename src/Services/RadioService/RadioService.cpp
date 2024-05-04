@@ -4,9 +4,10 @@
 
 #include "RadioService.h"
 
+volatile bool dioFlag = false;
 
-void handle_dio(){
-
+void handle_dio() {
+    dioFlag = true;
 }
 
 RadioService::RadioService() :
@@ -34,13 +35,26 @@ void RadioService::setup() {
     //register callback on packet
     _radio.value.setDio1Action(handle_dio);
 
-    softAssert(_radio.value.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF),"start receive");
+    softAssert(_radio.value.startReceive(RADIOLIB_SX126X_RX_TIMEOUT_INF), "start receive");
 
     _radio.unlock();
 }
 
 void RadioService::loop() {
+    if (dioFlag) {
+        dioFlag = false;
+        String message;
+        _radio.lock();
+        _radio.value.readData(message);
+        _radio.unlock();
+        if (message) {
+            Serial.printf("Received: %s\n", message.c_str());
+        }
+    }
 
+    _radio.lock();
+    _radio.value.transmit("Hello world!");
+    _radio.unlock();
 }
 
 
