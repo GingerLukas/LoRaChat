@@ -8,6 +8,7 @@
 #include "../ServiceBase.h"
 #include <Wire.h>
 #include <TouchLib.h>
+#include "models/TouchPoint.h"
 
 class TouchScreenService : public ServiceBase {
 public:
@@ -15,7 +16,7 @@ public:
 
     void begin(uint16_t width, uint16_t height, uint8_t rotation);
 
-    TP_Point getLastTouch();
+    TouchPoint getLastTouch();
 protected:
     void setup() override;
     void loop() override;
@@ -36,9 +37,9 @@ private:
     int16_t _map_y2 = -1;
 
     int16_t _max_x = 0, _max_y = 0;
-    RwThreadSafe<TP_Point> _lastTouch;
+    RwThreadSafe<TouchPoint> _lastTouch;
 
-    void translate(TP_Point& point);
+    void translate(TouchPoint& point);
 };
 
 

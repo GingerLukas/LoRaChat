@@ -34,7 +34,7 @@ void TouchScreenService::loop() {
     touchPending = false;
 
     if (available && _touch.read()) {
-        TP_Point t = _touch.getPoint(0);
+        TouchPoint t = _touch.getPoint(0);
         translate(t);
 
         _lastTouch.lockWrite();
@@ -82,7 +82,7 @@ void TouchScreenService::createTranslationMapping() {
 
 }
 
-void TouchScreenService::translate(TP_Point &point) {
+void TouchScreenService::translate(TouchPoint &point) {
     uint16_t x,y;
     if (_swap_xy) {
         x = map(point.y, _map_x1, _map_x2, 0, _max_x);
@@ -95,7 +95,7 @@ void TouchScreenService::translate(TP_Point &point) {
     point.y = y;
 }
 
-TP_Point TouchScreenService::getLastTouch() {
+TouchPoint TouchScreenService::getLastTouch() {
     _lastTouch.lockRead();
     auto last = _lastTouch.value;
     _lastTouch.unlock();

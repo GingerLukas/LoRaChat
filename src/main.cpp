@@ -20,9 +20,9 @@ void setup() {
     radio.begin();
 }
 
-TP_Point last;
+TouchPoint last;
 void loop() {
-    TP_Point current = touchScreen.getLastTouch();
+    TouchPoint current = touchScreen.getLastTouch();
     if(current != last){
         last = current;
         radio.sendMessage("Touched!");
