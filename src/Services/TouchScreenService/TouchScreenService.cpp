@@ -6,13 +6,14 @@
 
 static volatile bool touchPending = false;
 
-void handle_Touch(){
+void handle_Touch() {
     touchPending = true;
 }
 
-TouchScreenService::TouchScreenService() : _touch(Wire, TOUCH_SDA, TOUCH_SCL, TOUCH_MODULE_ADDR) {
-
+TouchScreenService::TouchScreenService() : _touch(Wire, TOUCH_AND_KB_SDA, TOUCH_AND_KB_SCL, TOUCH_MODULE_ADDR) {
+    pinMode(TOUCH_INT, INPUT);
 }
+
 void TouchScreenService::begin(uint16_t width, uint16_t height, uint8_t rotation) {
     _width = width;
     _height = height;
@@ -22,10 +23,10 @@ void TouchScreenService::begin(uint16_t width, uint16_t height, uint8_t rotation
 
     ServiceBase::begin("Touch", 10, 5);
 }
-void TouchScreenService::setup() {
-    attachInterrupt(digitalPinToInterrupt(TOUCH_INT),handle_Touch, RISING);
 
-    Wire.begin(TOUCH_SDA, TOUCH_SCL);
+void TouchScreenService::setup() {
+    attachInterrupt(digitalPinToInterrupt(TOUCH_INT), handle_Touch, RISING);
+
     _touch.init();
 }
 
@@ -83,7 +84,7 @@ void TouchScreenService::createTranslationMapping() {
 }
 
 void TouchScreenService::translate(TouchPoint &point) {
-    uint16_t x,y;
+    uint16_t x, y;
     if (_swap_xy) {
         x = map(point.y, _map_x1, _map_x2, 0, _max_x);
         y = map(point.x, _map_y1, _map_y2, 0, _max_y);

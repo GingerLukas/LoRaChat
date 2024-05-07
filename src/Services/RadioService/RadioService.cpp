@@ -12,7 +12,7 @@ void handle_dio() {
 
 RadioService::RadioService() :
         _radio(new Module(RADIO_CS, RADIO_DIO1, RADIO_RST, RADIO_BUSY)) {
-
+    pinMode(RADIO_CS, OUTPUT);
 }
 
 void RadioService::begin() {
