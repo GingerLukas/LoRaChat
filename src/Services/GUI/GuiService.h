@@ -32,7 +32,8 @@ private:
     lv_disp_draw_buf_t _drawBuffer;
     lv_disp_drv_t _driver;
 
-
+    lv_obj_t * _screen;
+    lv_obj_t * _panel;
 };
 
 
