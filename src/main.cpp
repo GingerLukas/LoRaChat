@@ -1,8 +1,8 @@
 #include <Arduino.h>
 
-#include "Services/TouchScreenService/TouchScreenService.h"
-#include "Services/RadioService/RadioService.h"
-#include "Services/KeyboardService/KeyboardService.h"
+#include "Services/TouchScreen/TouchScreenService.h"
+#include "Services/Radio/RadioService.h"
+#include "Services/Keyboard/KeyboardService.h"
 
 #include <lvgl.h>
 #include <Arduino_GFX_Library.h>
@@ -30,9 +30,9 @@ TouchPoint last;
 void loop() {
     TouchPoint current = touchScreen.getLastTouch();
     if(current != last){
+        Serial.printf("X: %d, Y: %d, age: %d ms\n",current.x, current.y, current.age());
         last = current;
         radio.sendMessage("Touched!");
-        Serial.printf("X: %d, Y: %d, age: %d ms\n",current.x, current.y, current.age());
     }
 
     while (keyboard.available()){
