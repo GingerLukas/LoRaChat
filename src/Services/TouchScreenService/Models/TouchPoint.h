@@ -33,7 +33,7 @@ struct TouchPoint{
     }
 
     bool operator!=(const TouchPoint& other){
-        return !(x == y);
+        return !(*this == other);
     }
 };
 
