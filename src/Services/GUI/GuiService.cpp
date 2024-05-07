@@ -8,6 +8,7 @@ static GuiService* gui;
 
 void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer)
 {
+    Serial.println("flush");
     gui->handleDisplayFlush(driver, area, buffer);
 }
 
@@ -53,7 +54,7 @@ void GuiService::setup() {
     // Init Display
     softAssert(_canvas->begin(80000000), "canvas begin");
 
-    _gfx->fillScreen(BLUE);
+    _gfx->fillScreen(BLACK);
 
     ledcSetup(0, 1000, 8);
     ledcAttachPin(DISPLAY_BACKLIGHT, 0);
