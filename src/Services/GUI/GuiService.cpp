@@ -27,6 +27,7 @@ void GuiService::handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area
 GuiService::GuiService() {
     gui = this;
     pinMode(DISPLAY_CS, OUTPUT);
+    pinMode(DISPLAY_DC, OUTPUT);
 }
 
 void GuiService::begin(uint16_t width, uint16_t height, uint8_t rotation) {
@@ -53,6 +54,10 @@ void GuiService::setup() {
     softAssert(_canvas->begin(80000000), "canvas begin");
 
     _gfx->fillScreen(BLUE);
+
+    ledcSetup(0, 1000, 8);
+    ledcAttachPin(DISPLAY_BACKLIGHT, 0);
+    ledcWrite(0, 191);
 
     // TODO: invert?
 
