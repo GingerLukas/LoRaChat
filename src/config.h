@@ -19,6 +19,10 @@ constexpr uint8_t SDCARD_CS = 39;
 constexpr uint8_t DISPLAY_CS = 12;
 constexpr uint8_t RADIO_CS = 9;
 
+constexpr uint8_t DISPLAY_DC = 11;
+constexpr uint8_t DISPLAY_BACKLIGHT = 42;
+
+
 constexpr uint8_t SPI_MOSI = 41;
 constexpr uint8_t SPI_MISO = 38;
 constexpr uint8_t SPI_SCK = 40;

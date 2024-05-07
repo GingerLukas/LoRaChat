@@ -29,16 +29,16 @@ void RadioService::setup() {
     SPI.end();
     SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
-    softAssert(_radio.value.begin(RADIO_FREQ), "radio freq");
+    softAssert(_radio.value.begin(RADIO_FREQ) == RADIOLIB_ERR_NONE, "radio freq");
 
-    softAssert(_radio.value.setBandwidth(250), "bandwidth");
-    softAssert(_radio.value.setSpreadingFactor(10), "spreading factor");
-    softAssert(_radio.value.setCodingRate(6), "coding rate");
-    softAssert(_radio.value.setSyncWord(0xAB), "sync word");
-    softAssert(_radio.value.setOutputPower(17), "output power");
-    softAssert(_radio.value.setCurrentLimit(140), "current limit");
-    softAssert(_radio.value.setPreambleLength(15), "preamble length");
-    softAssert(_radio.value.setCRC(false), "crc");
+    softAssert(_radio.value.setBandwidth(250) == RADIOLIB_ERR_NONE, "bandwidth");
+    softAssert(_radio.value.setSpreadingFactor(10) == RADIOLIB_ERR_NONE, "spreading factor");
+    softAssert(_radio.value.setCodingRate(6) == RADIOLIB_ERR_NONE, "coding rate");
+    softAssert(_radio.value.setSyncWord(0xAB) == RADIOLIB_ERR_NONE, "sync word");
+    softAssert(_radio.value.setOutputPower(17) == RADIOLIB_ERR_NONE, "output power");
+    softAssert(_radio.value.setCurrentLimit(140) == RADIOLIB_ERR_NONE, "current limit");
+    softAssert(_radio.value.setPreambleLength(15) == RADIOLIB_ERR_NONE, "preamble length");
+    softAssert(_radio.value.setCRC(false) == RADIOLIB_ERR_NONE, "crc");
 
 
     //register callback on packet
@@ -62,12 +62,12 @@ void RadioService::loop() {
         }
     }
 
-    softAssert(_radio.value.startReceive(), "start receive");
+    softAssert(_radio.value.startReceive() == RADIOLIB_ERR_NONE, "start receive");
 }
 
 void RadioService::sendMessage(const String &message) {
     _radio.lock();
-    softAssert(_radio.value.transmit(message.c_str()),"transmit");
+    softAssert(_radio.value.transmit(message.c_str()) == RADIOLIB_ERR_NONE, "transmit");
     _radio.unlock();
 }
 
