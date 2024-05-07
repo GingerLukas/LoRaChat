@@ -26,6 +26,7 @@ void GuiService::handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area
 
 GuiService::GuiService() {
     gui = this;
+    pinMode(DISPLAY_CS, OUTPUT);
 }
 
 void GuiService::begin(uint16_t width, uint16_t height, uint8_t rotation) {

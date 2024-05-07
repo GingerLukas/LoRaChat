@@ -22,12 +22,7 @@ void RadioService::begin() {
 void RadioService::setup() {
     _radio.lock();
 
-    digitalWrite(SDCARD_CS, HIGH);
-    digitalWrite(RADIO_CS, HIGH);
-    digitalWrite(DISPLAY_CS, HIGH);
 
-    SPI.end();
-    SPI.begin(SPI_SCK, SPI_MISO, SPI_MOSI);
 
     softAssert(_radio.value.begin(RADIO_FREQ) == RADIOLIB_ERR_NONE, "radio freq");
 
@@ -67,7 +62,7 @@ void RadioService::loop() {
 
 void RadioService::sendMessage(const String &message) {
     _radio.lock();
-    softAssert(_radio.value.transmit(message.c_str()) == RADIOLIB_ERR_NONE, "transmit");
+    softAssert(_radio.value.startTransmit(message.c_str()) == RADIOLIB_ERR_NONE, "transmit");
     _radio.unlock();
 }
 
