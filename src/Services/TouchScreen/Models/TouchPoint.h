@@ -8,31 +8,30 @@
 
 #include "stdint.h"
 
-struct TouchPoint{
-    uint16_t x,y;
+struct TouchPoint {
+    uint16_t x, y;
     uint64_t time;
 
-    TouchPoint(){
+    TouchPoint() {
         x = -1;
         y = -1;
         time = -1;
     }
 
-    TouchPoint(const TP_Point& point){
-        x = point.x;
-        y = point.y;
-        time = millis();
+    TouchPoint(const TP_Point &point) :
+            x(point.x), y(point.y),
+            time(millis()) {
     }
 
-    uint64_t age(){
+    uint64_t age() {
         return millis() - time;
     }
 
-    bool operator==(const TouchPoint& other){
+    bool operator==(const TouchPoint &other) {
         return x == other.x && y == other.y;
     }
 
-    bool operator!=(const TouchPoint& other){
+    bool operator!=(const TouchPoint &other) {
         return !(*this == other);
     }
 };

@@ -41,13 +41,13 @@ void loop() {
     if (current != last) {
         Serial.printf("X: %d, Y: %d, age: %d ms\n", current.x, current.y, current.age());
         last = current;
-        radio.sendMessage("Touched!");
+        //radio.sendMessage("Touched!");
     }
 
     while (keyboard.available()) {
         Serial.println(keyboard.getKey());
     }
 
-    delay(20);
+    delay(1);
 }
 
