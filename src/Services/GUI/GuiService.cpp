@@ -6,8 +6,8 @@
 
 static GuiService *gui;
 
-void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer) {
-    Serial.println("flush");
+void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer)
+{
     gui->handleDisplayFlush(driver, area, buffer);
 }
 
@@ -42,7 +42,7 @@ void GuiService::begin(uint16_t width, uint16_t height, uint8_t rotation) {
     _displayBuffer = (lv_color_t *) heap_caps_malloc(sizeof(lv_color_t) * _width * 40,
                                                      MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
-    ServiceBase::begin("GUI", 10, 10);
+    ServiceBase::begin("GUI", 10, 5);
 }
 
 void GuiService::setup() {
@@ -57,9 +57,7 @@ void GuiService::setup() {
 
     ledcSetup(0, 1000, 8);
     ledcAttachPin(DISPLAY_BACKLIGHT, 0);
-    ledcWrite(0, 191);
-
-    // TODO: invert?
+    ledcWrite(0, 255);
 
     _gfx->invertDisplay(true);
 
