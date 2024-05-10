@@ -28,10 +28,12 @@ protected:
     StaticTask_t _taskBuffer{};
     StackType_t _taskStack[4096]{};
 
-    void softAssert(uint32_t value, const String &text) {
+    bool softAssert(uint32_t value, const String &text) {
         if (value == 0) {
             Serial.printf("Soft assert failed! (%u): %s\n", value, text.c_str());
+            return false;
         }
+        return true;
     }
 };
 

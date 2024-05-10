@@ -10,6 +10,14 @@ void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_c
     gui->handleDisplayFlush(driver, area, buffer);
 }
 
+void handleKeyBoard_proxy(lv_indev_drv_t *driver, lv_indev_data_t *data) {
+    gui->handleKeyBoard(driver, data);
+}
+
+void handleTouch_proxy(lv_indev_drv_t *driver, lv_indev_data_t *data) {
+    gui->handleTouch(driver, data);
+}
+
 void GuiService::handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer) {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
@@ -72,7 +80,21 @@ void GuiService::setup() {
     lv_disp_drv_register(&_driver);
 
 
-    //TODO input devices
+    // Register touch
+    lv_indev_drv_init(&_touchDriver);
+    _touchDriver.type = LV_INDEV_TYPE_POINTER;
+    _touchDriver.read_cb = handleTouch_proxy;
+    _touchDevice = lv_indev_drv_register(&_touchDriver);
+
+    // Register keyboard
+    lv_indev_drv_init(&_kbDriver);
+    _kbDriver.type = LV_INDEV_TYPE_KEYPAD;
+    _kbDriver.read_cb = handleKeyBoard_proxy;
+    _kbDevice = lv_indev_drv_register(&_kbDriver);
+
+    _inputGroup = lv_group_create();
+    lv_group_set_default(_inputGroup);
+    lv_indev_set_group(_kbDevice, _inputGroup);
 
 
     initTheme();
@@ -80,8 +102,6 @@ void GuiService::setup() {
     initUI();
 
     lv_disp_load_scr(_screen);
-
-    lv_timer_handler();
 }
 
 void GuiService::loop() {
@@ -116,18 +136,72 @@ void GuiService::initUI() {
     lv_obj_set_style_bg_opa(_panel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_set_grid_dsc_array(_panel, col, row);
 
-    _messages = lv_textarea_create(_panel);
-    lv_textarea_set_placeholder_text(_messages, "Message history");
-    lv_obj_clear_flag(_messages, LV_OBJ_FLAG_CLICK_FOCUSABLE);
-    lv_obj_set_style_text_font(_messages, LV_FONT_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
+    _messages = lv_list_create(_panel);
     lv_obj_set_grid_cell(_messages, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 0, 4);
+    lv_obj_set_style_text_font(_messages, LV_FONT_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
 
     _input = lv_textarea_create(_panel);
+    lv_obj_set_grid_cell(_input, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 4, 1);
     lv_textarea_set_placeholder_text(_input, "Type here");
     lv_textarea_set_one_line(_input, true);
     lv_obj_add_state(_input, LV_STATE_FOCUSED);
-    lv_obj_set_grid_cell(_input, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 4, 1);
 }
+
+void GuiService::registerKeyBoardCallback(uint16_t (*kbCallback)()) {
+    _kbCallback = kbCallback;
+}
+
+uint16_t GuiService::invokeKbCallback() {
+    if (!softAssert(_kbCallback != nullptr, "Keyboard callback is null")) {
+        return 0;
+    }
+
+    return _kbCallback();
+}
+
+void GuiService::handleKeyBoard(lv_indev_drv_t *driver, lv_indev_data_t *data) {
+    if (_lastKey) {
+        data->key = _lastKey;
+        data->state = LV_INDEV_STATE_RELEASED;
+
+        _lastKey = 0;
+        return;
+    }
+
+    uint16_t key = invokeKbCallback();
+
+    if (!key) return;
+
+    data->key = key;
+    data->state = LV_INDEV_STATE_PRESSED;
+
+    _lastKey = key;
+}
+
+void GuiService::registerTouchCallback(TouchPoint (*touchCallback)()) {
+    _touchCallback = touchCallback;
+}
+
+void GuiService::handleTouch(lv_indev_drv_t *driver, lv_indev_data_t *data) {
+    auto touch = invokeTouchCallback();
+
+    data->point.x = touch.x;
+    data->point.y = touch.y;
+
+    data->state = touch.age() < 50 ?
+                  LV_INDEV_STATE_PRESSED :
+                  LV_INDEV_STATE_RELEASED;
+}
+
+TouchPoint GuiService::invokeTouchCallback() {
+    if (!softAssert(_touchCallback != nullptr, "Touch callback is null")) {
+        return TouchPoint();
+    }
+
+    return _touchCallback();
+}
+
+
 
 
 

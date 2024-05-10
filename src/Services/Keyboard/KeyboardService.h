@@ -17,15 +17,15 @@ class KeyboardService : public ServiceBase {
 public:
     void begin();
 
-    char getKey();
+    uint16_t getKey();
     size_t available();
 protected:
     void setup() override;
     void loop() override;
 
-    ThreadSafe<queue<char>> _pending;
+    ThreadSafe<queue<uint8_t>> _pending;
 
-
+    uint16_t transformKeyToLvGl(uint8_t key);
 };
 
 

@@ -26,7 +26,7 @@ void KeyboardService::setup() {
 void KeyboardService::loop() {
     Wire.requestFrom(KB_SLAVE_ADDRESS, 1u);
     int value = Wire.read();
-    if(value<=0) return;
+    if (value <= 0) return;
 
     _pending.lock();
     _pending.value.push(value);
@@ -40,8 +40,8 @@ size_t KeyboardService::available() {
     return size;
 }
 
-char KeyboardService::getKey() {
-    char result = 0;
+uint16_t KeyboardService::getKey() {
+    uint16_t result = 0;
 
     _pending.lock();
     if (!_pending.value.empty()) {
@@ -50,7 +50,31 @@ char KeyboardService::getKey() {
     }
     _pending.unlock();
 
-    return result;
+    return transformKeyToLvGl(result);
+}
+
+uint16_t KeyboardService::transformKeyToLvGl(uint8_t key) {
+    switch (key) {
+        default:
+            return key;
+        case 8:
+            return LV_KEY_BACKSPACE;
+        case 9:
+            return LV_KEY_NEXT;
+        case 10:
+        case 13:
+            return LV_KEY_ENTER;
+        case 27:
+            return LV_KEY_ESC;
+        case 180:
+            return LV_KEY_LEFT;
+        case 181:
+            return LV_KEY_UP;
+        case 182:
+            return LV_KEY_DOWN;
+        case 183:
+            return LV_KEY_RIGHT;
+    }
 }
 
 

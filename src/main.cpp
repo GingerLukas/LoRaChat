@@ -22,9 +22,20 @@ KeyboardService keyboard;
 
 GuiService gui;
 
+uint16_t kbCallback(){
+    return keyboard.getKey();
+}
+
+TouchPoint touchCallback(){
+    return touchScreen.getLastTouch();
+}
+
 void setup() {
     // write your initialization code here
     Serial.begin(115200);
+
+    gui.registerKeyBoardCallback(kbCallback);
+    gui.registerTouchCallback(touchCallback);
 
     Wire.begin(TOUCH_AND_KB_SDA, TOUCH_AND_KB_SCL);
 
@@ -37,17 +48,6 @@ void setup() {
 TouchPoint last;
 
 void loop() {
-    TouchPoint current = touchScreen.getLastTouch();
-    if (current != last) {
-        Serial.printf("X: %d, Y: %d, age: %d ms\n", current.x, current.y, current.age());
-        last = current;
-        //radio.sendMessage("Touched!");
-    }
-
-    while (keyboard.available()) {
-        Serial.println(keyboard.getKey());
-    }
-
-    delay(1);
+    delay(1000);
 }
 

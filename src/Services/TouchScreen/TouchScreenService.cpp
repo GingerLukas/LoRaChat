@@ -38,9 +38,7 @@ void TouchScreenService::loop() {
         TouchPoint t = _touch.getPoint(0);
         translate(t);
 
-        _lastTouch.lockWrite();
-        _lastTouch.value = t;
-        _lastTouch.unlock();
+        _lastTouch = t;
     }
 }
 
@@ -97,8 +95,5 @@ void TouchScreenService::translate(TouchPoint &point) {
 }
 
 TouchPoint TouchScreenService::getLastTouch() {
-    _lastTouch.lockRead();
-    auto last = _lastTouch.value;
-    _lastTouch.unlock();
-    return last;
+    return _lastTouch;
 }

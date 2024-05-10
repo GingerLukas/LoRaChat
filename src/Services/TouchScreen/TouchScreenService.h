@@ -37,7 +37,7 @@ private:
     int16_t _map_y2 = -1;
 
     int16_t _max_x = 0, _max_y = 0;
-    RwThreadSafe<TouchPoint> _lastTouch;
+    TouchPoint _lastTouch;
 
     void translate(TouchPoint& point);
 };

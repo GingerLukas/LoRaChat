@@ -7,16 +7,13 @@
 
 
 #include "stdint.h"
+#include "TouchLibInterface.hpp"
 
 struct TouchPoint {
-    uint16_t x, y;
-    uint64_t time;
+    uint16_t x = 0, y = 0;
+    uint64_t time = 0;
 
-    TouchPoint() {
-        x = -1;
-        y = -1;
-        time = -1;
-    }
+    TouchPoint() = default;
 
     TouchPoint(const TP_Point &point) :
             x(point.x), y(point.y),
