@@ -32,8 +32,13 @@ private:
     lv_disp_draw_buf_t _drawBuffer;
     lv_disp_drv_t _driver;
 
+    void initTheme();
+    void initUI();
+
     lv_obj_t * _screen;
     lv_obj_t * _panel;
+    lv_obj_t* _messages;
+    lv_obj_t* _input;
 };
 
 

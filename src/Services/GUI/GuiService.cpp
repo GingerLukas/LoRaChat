@@ -4,10 +4,9 @@
 
 #include "GuiService.h"
 
-static GuiService* gui;
+static GuiService *gui;
 
-void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer)
-{
+void handleDisplayFlush_proxy(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer) {
     Serial.println("flush");
     gui->handleDisplayFlush(driver, area, buffer);
 }
@@ -19,7 +18,7 @@ void GuiService::handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area
 #if (LV_COLOR_16_SWAP != 0)
     _gfx->draw16bitBeRGBBitmap(area->x1, area->y1, (uint16_t *)&color_p->full, w, h);
 #else
-    _gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *)&buffer->full, w, h);
+    _gfx->draw16bitRGBBitmap(area->x1, area->y1, (uint16_t *) &buffer->full, w, h);
 #endif
 
     lv_disp_flush_ready(driver);
@@ -41,7 +40,7 @@ void GuiService::begin(uint16_t width, uint16_t height, uint8_t rotation) {
     _canvas = new Arduino_Canvas(_width * 2, _height * 2, _gfx);
 
     _displayBuffer = (lv_color_t *) heap_caps_malloc(sizeof(lv_color_t) * _width * 40,
-                                                  MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
+                                                     MALLOC_CAP_INTERNAL | MALLOC_CAP_8BIT);
 
     ServiceBase::begin("GUI", 10, 10);
 }
@@ -62,6 +61,8 @@ void GuiService::setup() {
 
     // TODO: invert?
 
+    _gfx->invertDisplay(true);
+
     lv_init();
 
     lv_disp_draw_buf_init(&_drawBuffer, _displayBuffer, NULL, _width * 40);
@@ -77,24 +78,12 @@ void GuiService::setup() {
 
     //TODO input devices
 
-    //TODO actual ui
 
-    lv_disp_t *dispp = lv_disp_get_default();
-    lv_theme_t *theme = lv_theme_default_init(dispp, lv_palette_main(LV_PALETTE_BLUE), lv_palette_main(LV_PALETTE_RED), false, LV_FONT_DEFAULT);
-    lv_disp_set_theme(dispp, theme);
+    initTheme();
 
-    _screen = lv_obj_create(nullptr);
-    lv_obj_clear_flag(_screen, LV_OBJ_FLAG_SCROLLABLE );
+    initUI();
 
-    _panel = lv_obj_create(_screen);
-    lv_obj_set_width( _panel, 280);
-    lv_obj_set_height( _panel, 200);
-    lv_obj_set_align( _panel, LV_ALIGN_CENTER );
-    lv_obj_clear_flag( _panel, LV_OBJ_FLAG_SCROLLABLE );    /// Flags
-    lv_obj_set_style_bg_color(_panel, lv_color_hex(0xF2F2F2), LV_PART_MAIN | LV_STATE_DEFAULT );
-    lv_obj_set_style_bg_opa(_panel, 255, LV_PART_MAIN| LV_STATE_DEFAULT);
-
-    lv_disp_load_scr( _screen);
+    lv_disp_load_scr(_screen);
 
     lv_timer_handler();
 }
@@ -102,6 +91,48 @@ void GuiService::setup() {
 void GuiService::loop() {
     lv_timer_handler();
 }
+
+void GuiService::initTheme() {
+    lv_disp_t *display = lv_disp_get_default();
+    lv_theme_t *theme = lv_theme_default_init(display, lv_palette_main(LV_PALETTE_BLUE),
+                                              lv_palette_main(LV_PALETTE_RED), false,
+                                              LV_FONT_DEFAULT);
+    lv_disp_set_theme(display, theme);
+}
+
+void GuiService::initUI() {
+    _screen = lv_obj_create(nullptr);
+    lv_obj_clear_flag(_screen, LV_OBJ_FLAG_SCROLLABLE);
+
+    _panel = lv_obj_create(_screen);
+    lv_obj_set_width(_panel, 280);
+    lv_obj_set_height(_panel, 200);
+    lv_obj_set_align(_panel, LV_ALIGN_CENTER);
+    lv_obj_clear_flag(_panel, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_style_bg_color(_panel, lv_color_hex(0xF2F2F2), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(_panel, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    _messages = lv_textarea_create(_panel);
+    lv_obj_set_width(_messages, 280);
+    lv_obj_set_height(_messages, 140);
+    lv_obj_set_x(_messages, 0);
+    lv_obj_set_y(_messages, -15);
+    lv_obj_set_align(_messages, LV_ALIGN_CENTER);
+    lv_textarea_set_placeholder_text(_messages, "Message history");
+    lv_obj_clear_flag(_messages, LV_OBJ_FLAG_CLICK_FOCUSABLE);
+    lv_obj_set_style_text_font(_messages, LV_FONT_DEFAULT, LV_PART_MAIN | LV_STATE_DEFAULT);
+
+    _input = lv_textarea_create(_panel);
+    lv_obj_set_width( _input, 210);
+    lv_obj_set_height( _input, LV_SIZE_CONTENT);
+    lv_obj_set_x( _input, -35 );
+    lv_obj_set_y( _input, 81 );
+    lv_obj_set_align( _input, LV_ALIGN_CENTER );
+    lv_textarea_set_placeholder_text(_input,"Type here");
+    lv_textarea_set_one_line(_input,true);
+    lv_obj_add_state( _input, LV_STATE_FOCUSED );
+}
+
 
 
 
