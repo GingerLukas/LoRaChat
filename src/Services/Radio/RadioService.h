@@ -8,6 +8,7 @@
 
 #include "Services/ServiceBase.h"
 #include "modules/SX126x/SX1262.h"
+#include "Models/MessagePacket.h"
 
 class RadioService : public ServiceBase {
 public:
@@ -16,14 +17,21 @@ public:
     void begin();
 
     void sendMessage(const String& message);
+
+    size_t available();
+
+    MessagePacket readMessage();
 protected:
     void setup() override;
 
     void loop() override;
 
-
+    void handleInterrupt();
 private:
-    ThreadSafe<SX1262> _radio;
+    SX1262 _radio;
+    ThreadSafeQueue<MessagePacket> _rxQueue;
+    ThreadSafeQueue<String> _txQueue;
+    String _tmpMessage;
 };
 
 

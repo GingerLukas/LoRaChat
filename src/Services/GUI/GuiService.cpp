@@ -104,8 +104,21 @@ void GuiService::setup() {
     lv_disp_load_scr(_screen);
 }
 
+String tmp;
 void GuiService::loop() {
+    bool enter = enterPressed;
+    enterPressed = false;
+    if(enter){
+        tmp = String(lv_textarea_get_text(_input));
+        lv_textarea_set_text(_input, "");
+    }
+    lvObj.lock();
     lv_timer_handler();
+    lvObj.unlock();
+    if(enter){
+        invokeMessageSent(tmp);
+        addMessage(tmp);
+    }
 }
 
 void GuiService::initTheme() {
@@ -144,6 +157,7 @@ void GuiService::initUI() {
     lv_obj_set_grid_cell(_input, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 4, 1);
     lv_textarea_set_placeholder_text(_input, "Type here");
     lv_textarea_set_one_line(_input, true);
+    lv_textarea_set_max_length(_input, 250);
     lv_obj_add_state(_input, LV_STATE_FOCUSED);
 }
 
@@ -175,6 +189,8 @@ void GuiService::handleKeyBoard(lv_indev_drv_t *driver, lv_indev_data_t *data) {
     data->key = key;
     data->state = LV_INDEV_STATE_PRESSED;
 
+    if(data->key == LV_KEY_ENTER) enterPressed = true;
+
     _lastKey = key;
 }
 
@@ -199,6 +215,25 @@ TouchPoint GuiService::invokeTouchCallback() {
     }
 
     return _touchCallback();
+}
+
+void GuiService::addMessage(const String &message) {
+    lvObj.lock();
+    auto label = lv_label_create(_messages);
+    lv_label_set_text(label,message.c_str());
+    lv_obj_scroll_to_view(label, LV_ANIM_ON);
+    lvObj.unlock();
+}
+
+void GuiService::invokeMessageSent(const String &message) {
+    if(!softAssert(_messageSentCallback != nullptr, "Sent message callback is null")){
+        return;
+    }
+    _messageSentCallback(message);
+}
+
+void GuiService::registerMessageSentCallback(void (*messageSentCallback)(const String &)) {
+    _messageSentCallback = messageSentCallback;
 }
 
 

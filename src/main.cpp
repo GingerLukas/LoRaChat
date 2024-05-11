@@ -22,12 +22,17 @@ KeyboardService keyboard;
 
 GuiService gui;
 
-uint16_t kbCallback(){
+uint16_t kbCallback() {
     return keyboard.getKey();
 }
 
-TouchPoint touchCallback(){
+TouchPoint touchCallback() {
     return touchScreen.getLastTouch();
+}
+
+void messageSentCallback(const String &message) {
+    Serial.println(message);
+    radio.sendMessage(message);
 }
 
 void setup() {
@@ -36,6 +41,7 @@ void setup() {
 
     gui.registerKeyBoardCallback(kbCallback);
     gui.registerTouchCallback(touchCallback);
+    gui.registerMessageSentCallback(messageSentCallback);
 
     Wire.begin(TOUCH_AND_KB_SDA, TOUCH_AND_KB_SCL);
 
@@ -48,6 +54,12 @@ void setup() {
 TouchPoint last;
 
 void loop() {
-    delay(1000);
+    while (radio.available()) {
+        auto message = radio.readMessage();
+        char buffer[256];
+        snprintf(buffer, 256, "[%.02f]: %s", message.RSSI, message.content.c_str());
+        gui.addMessage(buffer);
+    }
+    delay(10);
 }
 

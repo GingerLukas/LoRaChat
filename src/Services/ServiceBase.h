@@ -10,6 +10,7 @@
 #include "task.h"
 #include "Mutex/ThreadSafe.h"
 #include "Mutex/RwThreadSafe.h"
+#include "Mutex/ThreadSafeQueue.h"
 
 class ServiceBase {
 protected:
@@ -30,7 +31,7 @@ protected:
 
     bool softAssert(uint32_t value, const String &text) {
         if (value == 0) {
-            Serial.printf("Soft assert failed! (%u): %s\n", value, text.c_str());
+            Serial.printf("Soft assert failed!: %s\n", text.c_str());
             return false;
         }
         return true;

@@ -23,7 +23,7 @@ protected:
     void setup() override;
     void loop() override;
 
-    ThreadSafe<queue<uint8_t>> _pending;
+    ThreadSafeQueue<uint8_t> _pending;
 
     uint16_t transformKeyToLvGl(uint8_t key);
 };

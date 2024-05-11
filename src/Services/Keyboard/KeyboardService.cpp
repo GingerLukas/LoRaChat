@@ -28,29 +28,15 @@ void KeyboardService::loop() {
     int value = Wire.read();
     if (value <= 0) return;
 
-    _pending.lock();
-    _pending.value.push(value);
-    _pending.unlock();
+    _pending.put(value);
 }
 
 size_t KeyboardService::available() {
-    _pending.lock();
-    size_t size = _pending.value.size();
-    _pending.unlock();
-    return size;
+    return _pending.size();
 }
 
 uint16_t KeyboardService::getKey() {
-    uint16_t result = 0;
-
-    _pending.lock();
-    if (!_pending.value.empty()) {
-        result = _pending.value.front();
-        _pending.value.pop();
-    }
-    _pending.unlock();
-
-    return transformKeyToLvGl(result);
+    return transformKeyToLvGl(_pending.get());
 }
 
 uint16_t KeyboardService::transformKeyToLvGl(uint8_t key) {

@@ -19,6 +19,9 @@ public:
     void registerKeyBoardCallback(uint16_t (*kbCallback)());
     void registerTouchCallback(TouchPoint (*touchCallback)());
 
+    void registerMessageSentCallback(void (*messageSentCallback)(const String&));
+    void addMessage(const String& message);
+
     void handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer);
     void handleKeyBoard(lv_indev_drv_t *driver, lv_indev_data_t *data);
     void handleTouch(lv_indev_drv_t *driver, lv_indev_data_t *data);
@@ -29,13 +32,18 @@ protected:
     void loop() override;
 
 private:
-    uint16_t invokeKbCallback();
+    Mutex lvObj;
+    bool enterPressed = false;
 
+    uint16_t invokeKbCallback();
     uint16_t (*_kbCallback)() = nullptr;
     uint16_t _lastKey = 0;
 
     TouchPoint invokeTouchCallback();
     TouchPoint (*_touchCallback)() = nullptr;
+
+    void invokeMessageSent(const String& message);
+    void (*_messageSentCallback)(const String&);
 
     uint16_t _width;
     uint16_t _height;
