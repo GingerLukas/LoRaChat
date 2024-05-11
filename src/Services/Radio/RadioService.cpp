@@ -4,17 +4,28 @@
 
 #include "RadioService.h"
 
-volatile size_t pendingCounter = 0;
-volatile size_t handledCounter = 0;
-volatile bool transmissionInProgress = false;
+volatile size_t pendingTxCounter = 0;
+volatile size_t handledTxCounter = 0;
+
+volatile size_t pendingRxCounter = 0;
+volatile size_t handledRxCounter = 0;
+
+SX1262 *irq_radio = nullptr;
 
 void handle_dio() {
-    pendingCounter++;
+    uint16_t status = irq_radio->getIrqStatus();
+    if (status & RADIOLIB_SX126X_IRQ_RX_DONE) {
+        pendingRxCounter++;
+    }
+    else if(status & RADIOLIB_SX126X_IRQ_TX_DONE){
+        pendingTxCounter++;
+    }
 }
 
 RadioService::RadioService() :
         _radio(new Module(RADIO_CS, RADIO_DIO1, RADIO_RST, RADIO_BUSY)) {
     pinMode(RADIO_CS, OUTPUT);
+    irq_radio = &_radio;
 
     //reserve max size of packet
     _tmpMessage.reserve(256);
@@ -50,8 +61,7 @@ void RadioService::setup() {
 void RadioService::loop() {
     handleInterrupt();
 
-    if (!transmissionInProgress && _txQueue.size()) {
-        transmissionInProgress = true;
+    if ((handledTxCounter == pendingTxCounter) && _txQueue.size()) {
         String txMessage = _txQueue.get();
         auto result = _radio.startTransmit(txMessage);
         if (!softAssert(result == RADIOLIB_ERR_NONE, "transmit")) {
@@ -73,21 +83,18 @@ MessagePacket RadioService::readMessage() {
 }
 
 void RadioService::handleInterrupt() {
-    while (handledCounter != pendingCounter) {
-        handledCounter++;
-
-        if (transmissionInProgress) {
-            transmissionInProgress = false;
-            while (!softAssert(_radio.finishTransmit() == RADIOLIB_ERR_NONE, "start receive")) {
-                delay(240);
-            }
-            while (!softAssert(_radio.startReceive() == RADIOLIB_ERR_NONE, "start receive")) {
-                delay(240);
-            }
-            continue;
+    if(handledTxCounter != pendingTxCounter){
+        handledTxCounter++;
+        while (!softAssert(_radio.finishTransmit() == RADIOLIB_ERR_NONE, "start receive")) {
+            delay(240);
         }
+        softAssert(_radio.startReceive() == RADIOLIB_ERR_NONE, "start receive");
+    }
+    if (handledRxCounter != pendingRxCounter) {
+        handledRxCounter++;
 
         size_t len = _radio.getPacketLength();
+        softAssert(len <= RADIOLIB_SX126X_MAX_PACKET_LENGTH, "Invalid packet length");
         uint8_t buffer[len];
         _radio.readData(buffer, len);
         _rxQueue.put(MessagePacket(_radio.getRSSI(),

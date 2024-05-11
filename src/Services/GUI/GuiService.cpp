@@ -222,6 +222,7 @@ void GuiService::addMessage(const String &message) {
     auto label = lv_label_create(_messages);
     lv_label_set_text(label,message.c_str());
     lv_obj_scroll_to_view(label, LV_ANIM_ON);
+    lv_obj_invalidate(_messages);
     lvObj.unlock();
 }
 
