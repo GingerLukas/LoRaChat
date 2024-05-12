@@ -62,15 +62,15 @@ void RadioService::loop() {
     handleInterrupt();
 
     if ((handledTxCounter == pendingTxCounter) && _txQueue.size()) {
-        String txMessage = _txQueue.get();
-        auto result = _radio.startTransmit(txMessage);
+        auto txMessage = _txQueue.get();
+        auto result = _radio.startTransmit(txMessage.rawData, txMessage.getTotalLen());
         if (!softAssert(result == RADIOLIB_ERR_NONE, "transmit")) {
             Serial.printf("Transmit failed with error: %d\n", result);
         }
     }
 }
 
-void RadioService::sendMessage(const String &message) {
+void RadioService::sendMessage(const MessagePacket &message) {
     _txQueue.put(message);
 }
 
@@ -85,9 +85,7 @@ MessagePacket RadioService::readMessage() {
 void RadioService::handleInterrupt() {
     if(handledTxCounter != pendingTxCounter){
         handledTxCounter++;
-        while (!softAssert(_radio.finishTransmit() == RADIOLIB_ERR_NONE, "start receive")) {
-            delay(240);
-        }
+        softAssert(_radio.finishTransmit() == RADIOLIB_ERR_NONE, "start receive");
         softAssert(_radio.startReceive() == RADIOLIB_ERR_NONE, "start receive");
     }
     if (handledRxCounter != pendingRxCounter) {
@@ -95,11 +93,11 @@ void RadioService::handleInterrupt() {
 
         size_t len = _radio.getPacketLength();
         softAssert(len <= RADIOLIB_SX126X_MAX_PACKET_LENGTH, "Invalid packet length");
-        uint8_t buffer[len];
-        _radio.readData(buffer, len);
-        _rxQueue.put(MessagePacket(_radio.getRSSI(),
-                                   _radio.getSNR(),
-                                   String(buffer, len)));
+
+        MessagePacket packet(_radio.getRSSI(), _radio.getSNR());
+        _radio.readData(packet.rawData, len);
+
+        _rxQueue.put(packet);
     }
 }
 

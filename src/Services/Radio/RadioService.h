@@ -16,7 +16,7 @@ public:
 
     void begin();
 
-    void sendMessage(const String& message);
+    void sendMessage(const MessagePacket& message);
 
     size_t available();
 
@@ -30,7 +30,7 @@ protected:
 private:
     SX1262 _radio;
     ThreadSafeQueue<MessagePacket> _rxQueue;
-    ThreadSafeQueue<String> _txQueue;
+    ThreadSafeQueue<MessagePacket> _txQueue;
     String _tmpMessage;
 };
 

@@ -99,25 +99,43 @@ void GuiService::setup() {
 
     initTheme();
 
-    initUI();
+    initChatScreen();
+    initSettingsScreen();
 
-    lv_disp_load_scr(_screen);
+    setScreen(Settings);
 }
 
 String tmp;
+
 void GuiService::loop() {
     bool enter = enterPressed;
     enterPressed = false;
-    if(enter){
-        tmp = String(lv_textarea_get_text(_input));
-        lv_textarea_set_text(_input, "");
+
+    if (enter) {
+        switch (_currentScreen) {
+            case Settings:
+                break;
+            case Chat:
+                tmp = String(lv_textarea_get_text(_input));
+                lv_textarea_set_text(_input, "");
+                break;
+        }
     }
     lvObj.lock();
     lv_timer_handler();
     lvObj.unlock();
-    if(enter){
-        invokeMessageSent(tmp);
-        addMessage(tmp);
+    if (enter) {
+        switch (_currentScreen) {
+            case Settings:
+                _user = lv_textarea_get_text(_username);
+                setScreen(Chat);
+                break;
+            case Chat:
+                MessagePacket packet(_user, tmp);
+                invokeMessageSent(packet);
+                addMessage(packet);
+                break;
+        }
     }
 }
 
@@ -129,9 +147,9 @@ void GuiService::initTheme() {
     lv_disp_set_theme(display, theme);
 }
 
-void GuiService::initUI() {
-    _screen = lv_obj_create(nullptr);
-    lv_obj_clear_flag(_screen, LV_OBJ_FLAG_SCROLLABLE);
+void GuiService::initChatScreen() {
+    _chatScreen = lv_obj_create(nullptr);
+    lv_obj_clear_flag(_chatScreen, LV_OBJ_FLAG_SCROLLABLE);
 
     static lv_coord_t col[] = {LV_GRID_FR(1), LV_GRID_TEMPLATE_LAST};
     static lv_coord_t row[] = {LV_GRID_FR(1),
@@ -141,7 +159,7 @@ void GuiService::initUI() {
                                LV_GRID_FR(1),
                                LV_GRID_TEMPLATE_LAST};
 
-    _panel = lv_obj_create(_screen);
+    _panel = lv_obj_create(_chatScreen);
     lv_obj_set_size(_panel, 320, 240);
     lv_obj_set_align(_panel, LV_ALIGN_CENTER);
     lv_obj_clear_flag(_panel, LV_OBJ_FLAG_SCROLLABLE);
@@ -157,8 +175,17 @@ void GuiService::initUI() {
     lv_obj_set_grid_cell(_input, LV_GRID_ALIGN_STRETCH, 0, 1, LV_GRID_ALIGN_STRETCH, 4, 1);
     lv_textarea_set_placeholder_text(_input, "Type here");
     lv_textarea_set_one_line(_input, true);
-    lv_textarea_set_max_length(_input, 250);
-    lv_obj_add_state(_input, LV_STATE_FOCUSED);
+    lv_textarea_set_max_length(_input, 200);
+}
+
+void GuiService::initSettingsScreen() {
+    _settingScreen = lv_obj_create(nullptr);
+
+    _username = lv_textarea_create(_settingScreen);
+    lv_textarea_set_placeholder_text(_username, "Username");
+    lv_textarea_set_one_line(_username, true);
+    lv_textarea_set_max_length(_username, 16);
+    lv_obj_set_align(_username, LV_ALIGN_CENTER);
 }
 
 void GuiService::registerKeyBoardCallback(uint16_t (*kbCallback)()) {
@@ -189,7 +216,7 @@ void GuiService::handleKeyBoard(lv_indev_drv_t *driver, lv_indev_data_t *data) {
     data->key = key;
     data->state = LV_INDEV_STATE_PRESSED;
 
-    if(data->key == LV_KEY_ENTER) enterPressed = true;
+    if (data->key == LV_KEY_ENTER) enterPressed = true;
 
     _lastKey = key;
 }
@@ -217,25 +244,46 @@ TouchPoint GuiService::invokeTouchCallback() {
     return _touchCallback();
 }
 
-void GuiService::addMessage(const String &message) {
+char buffer[512];
+
+void GuiService::addMessage(const MessagePacket &message) {
     lvObj.lock();
+    message.toString(buffer, 512);
     auto label = lv_label_create(_messages);
-    lv_label_set_text(label,message.c_str());
+    lv_label_set_text(label, buffer);
     lv_obj_scroll_to_view(label, LV_ANIM_ON);
     lv_obj_invalidate(_messages);
     lvObj.unlock();
 }
 
-void GuiService::invokeMessageSent(const String &message) {
-    if(!softAssert(_messageSentCallback != nullptr, "Sent message callback is null")){
+void GuiService::invokeMessageSent(const MessagePacket &message) {
+    if (!softAssert(_messageSentCallback != nullptr, "Sent message callback is null")) {
         return;
     }
     _messageSentCallback(message);
 }
 
-void GuiService::registerMessageSentCallback(void (*messageSentCallback)(const String &)) {
+void GuiService::registerMessageSentCallback(void (*messageSentCallback)(const MessagePacket &)) {
     _messageSentCallback = messageSentCallback;
 }
+
+void GuiService::setScreen(GuiService::EScreen screen) {
+    if(_currentScreen == screen) return;
+    _currentScreen = screen;
+    switch (screen) {
+
+        case Settings:
+            lv_disp_load_scr(_settingScreen);
+            lv_group_focus_obj(_username);
+            break;
+        case Chat:
+            lv_disp_load_scr(_chatScreen);
+            lv_group_focus_obj(_input);
+            break;
+    }
+}
+
+
 
 
 

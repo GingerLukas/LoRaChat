@@ -9,6 +9,7 @@
 #include "lvgl.h"
 #include "Arduino_GFX_Library.h"
 #include "../TouchScreen/Models/TouchPoint.h"
+#include "Services/Radio/Models/MessagePacket.h"
 
 class GuiService : public ServiceBase {
 public:
@@ -19,8 +20,8 @@ public:
     void registerKeyBoardCallback(uint16_t (*kbCallback)());
     void registerTouchCallback(TouchPoint (*touchCallback)());
 
-    void registerMessageSentCallback(void (*messageSentCallback)(const String&));
-    void addMessage(const String& message);
+    void registerMessageSentCallback(void (*messageSentCallback)(const MessagePacket&));
+    void addMessage(const MessagePacket& message);
 
     void handleDisplayFlush(lv_disp_drv_t *driver, const lv_area_t *area, lv_color_t *buffer);
     void handleKeyBoard(lv_indev_drv_t *driver, lv_indev_data_t *data);
@@ -34,6 +35,7 @@ protected:
 private:
     Mutex lvObj;
     bool enterPressed = false;
+    String _user;
 
     uint16_t invokeKbCallback();
     uint16_t (*_kbCallback)() = nullptr;
@@ -42,8 +44,8 @@ private:
     TouchPoint invokeTouchCallback();
     TouchPoint (*_touchCallback)() = nullptr;
 
-    void invokeMessageSent(const String& message);
-    void (*_messageSentCallback)(const String&);
+    void invokeMessageSent(const MessagePacket& message);
+    void (*_messageSentCallback)(const MessagePacket&);
 
     uint16_t _width;
     uint16_t _height;
@@ -67,9 +69,20 @@ private:
 
     void initTheme();
 
-    void initUI();
+    void initChatScreen();
+    void initSettingsScreen();
+    enum EScreen{
+        None,
+        Settings,
+        Chat
+    };
+    EScreen _currentScreen = None;
+    void setScreen(EScreen screen);
 
-    lv_obj_t *_screen;
+    lv_obj_t *_settingScreen;
+    lv_obj_t *_username;
+
+    lv_obj_t *_chatScreen;
     lv_obj_t *_panel;
     lv_obj_t *_messages;
     lv_obj_t *_input;

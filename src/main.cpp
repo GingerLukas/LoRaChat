@@ -30,8 +30,7 @@ TouchPoint touchCallback() {
     return touchScreen.getLastTouch();
 }
 
-void messageSentCallback(const String &message) {
-    Serial.println(message);
+void messageSentCallback(const MessagePacket &message) {
     radio.sendMessage(message);
 }
 
@@ -56,9 +55,8 @@ TouchPoint last;
 void loop() {
     while (radio.available()) {
         auto message = radio.readMessage();
-        char buffer[256];
-        snprintf(buffer, 256, "[%.02f]: %s", message.RSSI, message.content.c_str());
-        gui.addMessage(buffer);
+        message.parseRaw();
+        gui.addMessage(message);
     }
     delay(10);
 }
