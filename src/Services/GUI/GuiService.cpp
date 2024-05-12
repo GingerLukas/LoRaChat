@@ -128,12 +128,14 @@ void GuiService::loop() {
         switch (_currentScreen) {
             case Settings:
                 _user = lv_textarea_get_text(_username);
-                setScreen(Chat);
+                if (_user.length() >= 3)setScreen(Chat);
                 break;
             case Chat:
-                MessagePacket packet(_user, tmp);
-                invokeMessageSent(packet);
-                addMessage(packet);
+                if (tmp.length()) {
+                    MessagePacket packet(_user, tmp);
+                    invokeMessageSent(packet);
+                    addMessage(packet);
+                }
                 break;
         }
     }
@@ -268,7 +270,7 @@ void GuiService::registerMessageSentCallback(void (*messageSentCallback)(const M
 }
 
 void GuiService::setScreen(GuiService::EScreen screen) {
-    if(_currentScreen == screen) return;
+    if (_currentScreen == screen) return;
     _currentScreen = screen;
     switch (screen) {
 
